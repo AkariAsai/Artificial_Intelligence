@@ -1,0 +1,72 @@
+step : W1 turned to In
+NG_W1 need to be resolved 
+step : W1 turned out, R1 turned in
+step : W2 turned to In
+NG_W2 need to be resolved 
+step : W2 turned out, Y2 turned in
+step : W3 turned to In
+NG_W3 need to be resolved 
+step : W3 turned out, Y3 turned in
+NG_Y23 need to be resolved 
+step : Y2 turned out, G2 turned in
+step : W4 turned to In
+NG_W4 need to be resolved 
+step : W4 turned out, R4 turned in
+NG_R41 need to be resolved 
+step : R1 turned out, G1 turned in
+NG_G12 need to be resolved 
+step : G2 turned out, R2 turned in
+step : W5 turned to In
+NG_W5 need to be resolved 
+step : W5 turned out, R5 turned in
+NG_R25 need to be resolved 
+step : R5 turned out, B5 turned in
+step : W6 turned to In
+NG_W6 need to be resolved 
+step : W6 turned out, B6 turned in
+NG_B56 need to be resolved 
+step : B5 turned out, G5 turned in
+NG_G15 need to be resolved 
+step : G5 turned out, R5 turned in
+NG_R25 need to be resolved 
+step : R2 turned out, Y2 turned in
+NG_Y23 need to be resolved 
+step : Y2 turned out, G2 turned in
+NG_G12 need to be resolved 
+step : G1 turned out, R1 turned in
+NG_R41 need to be resolved 
+step : R1 turned out, B1 turned in
+step : W7 turned to In
+NG_W7 need to be resolved 
+step : W7 turned out, R7 turned in
+NG_R47 need to be resolved 
+step : R4 turned out, B4 turned in
+NG_B41 need to be resolved 
+step : B1 turned out, G1 turned in
+NG_G12 need to be resolved 
+step : G2 turned out, R2 turned in
+NG_R25 need to be resolved 
+step : R2 turned out, G2 turned in
+NG_G12 need to be resolved 
+step : G1 turned out, B1 turned in
+NG_B41 need to be resolved 
+step : B4 turned out, G4 turned in
+step : W8 turned to In
+NG_W8 need to be resolved 
+step : W8 turned out, Y8 turned in
+step : W9 turned to In
+NG_W9 need to be resolved 
+step : W9 turned out, B9 turned in
+NG_B69 need to be resolved 
+step : B6 turned out, Y6 turned in
+NG_Y36 need to be resolved 
+step : Y6 turned out, G6 turned in
+NG_G26 need to be resolved 
+step : G6 turned out, B6 turned in
+NG_B69 need to be resolved 
+step : B6 turned out, Y6 turned in
+NG_Y36 need to be resolved 
+step : Y6 turned out, B6 turned in
+NG_B69 need to be resolved 
+step : B9 turned out, G9 turned in
+step : Successfully finished coloring!

@@ -1,0 +1,251 @@
+\documentclass[uplatex]{jsarticle}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{ascmac}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{cases}
+
+\DeclareMathOperator*{\minimize}{minimize}
+
+
+\title{人工知能 課題番号1「人工知能の実現可能性について考察せよ」}
+\author{工学部電子情報工学科 03-175001 浅井明里}
+
+\makeatletter
+\def\maketitle{%
+  \null
+  \thispagestyle{empty}%
+  \vfill
+  \begin{center}\leavevmode
+    \normalfont
+    {\LARGE \@title\par}%
+    \vskip 1cm
+    {\Large \@author\par}%
+    \vskip 1cm
+    {\Large \@date\par}%
+  \end{center}%
+  \vfill
+  \null
+  \@thanks%\vfil\null
+  \cleardoublepage
+  }
+\makeatother
+
+
+\title{人工知能 課題番号28「新しいメタヒューリスティクス手法のアルゴリズムの解説及びその応用例」}
+\author{工学部電子情報工学科 03-175001 浅井明里}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{本課題で取り扱ったアルゴリズム}
+本課題ではYang and Deb(2009)のCuckoo Search(CS)及びGeem(2000)のHarmony Search(HSについて、
+そのアルゴリズムの説明や実用例などについて論じる。
+
+\section{Cuckoo Search(CS, カッコウ探索)}
+\subsection{カッコウ探索アルゴリズムの説明}
+カッコウ探索はカッコウの、卵を産むが自分では子育てをせず他の鳥の巣に卵を産み、育てさせる
+という独特な托卵の習性に着想を得た、
+連続値最適化問題を対象とする多点探索型メタヒューリスティクである。
+カッコウに托卵された他の種が仮に卵が自身のものでないと気がついてしまうと、
+カッコウの卵を捨ててしまうもしくはその巣を放棄して新たな巣を別の場所で作ってしまうため、
+カッコウの中には卵の色や模様のパターンを寄生する種の卵と似せたりするものもある。
+カッコウ探索は次のようなルールに従う。
+
+\begin{enumerate}
+  \item 各カッコウはランダムに選んだ巣に一つ卵を産み付ける。
+  \item 質の良い卵を持つ巣は次の世代へと持ち越される。
+  \item 寄生可能な巣の数は固定されており、寄生先の親が卵が自分のものでないと$p_a \in [0,1]$で見破る。
+  発見されると卵は巣から捨てられたり、寄生先の親がその巣を放棄して新たな巣を作ることで見捨てられる。
+\end{enumerate}
+
+卵をランダムに選択された巣に産み付ける行為を「Levy Flight」と呼び、これはランダムウォークの
+一種である。これはLevy分布にしたがっており、Levy分布は$\mu$を
+位置パラメータ、$c$を尺度パラメータとしたとき、
+以下の式で定義される。
+
+\[
+  f_\mathcal{L}(x; \mu, c) = \begin{cases}
+    \sqrt{\frac{c}{2\pi}}\frac{\exp{(-c/(2(x-\mu)))}}{(x-\mu)^{3/2}} & (\mu \leq x) \\
+    0 & (otherwise)
+  \end{cases}
+\]
+飛行パターンや採餌行動など，様々な自然現象や物理現象における確率的変動を表現できるとされて
+おり、また最適化においては、
+正規分布に従う乱数によるランダ ムウォーク(Gauss Flight)を用いる場合に比べ、
+効率的な探索を行うことができると言われている。
+
+カッコウ探索のアルゴリズムをステップごとに示すと次のようになる。
+
+\begin{enumerate}
+  \item 探索点数$m$, パラメータ$\alpha \geq 0, \beta \in [0.3, 1.99], 排斥確率P_a \in [0,1],$
+  最大評価回数を$T_{max}$を定め、評価回数を$T = 0$とする。
+  \item 探索点の初期位置$x^i(i=1,2, \ldots, m)$を初期配置領域
+  {\bf IS}内にランダムに与え、評価回数を$T = m$とする。
+  \item 参照探索点$x^{r_1}$を基準として、近傍解${\hat x}$を
+  $$\hat{x} = x^{r_1} + \alpha {\bf L}(\beta) $$
+  より生成する。ここで$r_1$は整数値一様分布に従う乱数であり、
+${\bf L}(\beta)$はLevy 乱数ベクトルであり，各要素${\bf L}_n(\beta)$ は近似 Levy 分布に従う乱数となっている。
+\item 更新探索点を$x^{r2}$を
+\[
+  v^{r_2} = \begin{cases}
+    \hat{x} - x^{r_2} & f(\hat{x} < f(x^{r_2}) \\
+    0 & otherwise
+  \end{cases}
+\]
+$$x^{r_2} := x^{r_2} + v^{r_2} $$
+より更新を行う。ここで$r_2$は整数値一様分布に従う乱数である。
+更新後、評価回数を$T := T + 1$とする。
+\item 排斥確率$P_a$にしたがって以下の操作を行う。
+最悪探索点を$x_{c-worst}$を
+$$x_{c-worst} = {\bf argmax}\{f(x_i)| i = 1, \ldots, m\}$$
+とし、
+$$x_{c-worst} := x_{c-worst} + \alpha {\bf L}(\beta)$$
+より更新する。ここで
+${\bf L}(\beta)$はLevy 乱数ベクトルであり，各要素${\bf L}_n(\beta)$ は近似 Levy 分布に従う乱数となっている。
+更新後、$T := T +1$とする。
+
+\item $T \geq T_{max}$ならば探索終了、さもなければ3に戻る。
+\end{enumerate}
+
+\subsection{カッコウ探索の特徴}
+Yang(2010)によると、Levy Flightと組み合わせたカッコウ探索は
+他の遺伝的アルゴリズム、PSOなどの手法と比較し、はるかに効率的であり、また
+ほぼ全てのテスト問題においてより良い結果をあげている。その理由として、
+カッコウ探索においてはん微調整が必要なパラメータの数が少なくいことがあげられる。
+実際のところ、人口サイズの$n$を除き、重要なパラメータは排斥率$P_a$のみである。
+
+加えて、カッコウ探索のシミュレーションでは、収束率はアルゴリズムに依存した$P_a$のような
+パラメータに対して鈍感であり、特定の問題に対してはこれらのパラメータを微調整しなくて良い
+ことを示している。このことは他の手法と比較し、カッコウ探索をより一般的かつ頑健なものとしている。
+
+\subsection{カッコウ探索の実用例}
+カッコウ探索は様々な現実世界の問題に適用されている。
+ジョブショップスケジューリング問題等、
+遺伝的アルゴリズムの応用が近年注目されている領域に対するカッコウ探索の応用が進むが、特に
+いくつかの問題では他の探索アルゴリズムと比較してもカッコウ探索が抜きん出て優れた結果を示している。
+
+Yang(2015)は新たなマルチプロセッサ・タスクスケジューリングアルゴリズム
+としてカッコウ探索アルゴリズムを提唱し、カッコウ探索を利用した場合、
+最短の課題完了時間を得ることができるだけでなく最速解決速度を持つことを示した。
+この計算時間は現在広く用いられている遺伝的アルゴリズムと粒子スウォーム最適化アルゴリズムよりも60\%も
+低かったとしており、カッコウ探索がこの問題において優れた性能をあげうることを示している。
+
+池田(2014)は蓄電池・蓄熱槽・熱源の統合的最適運用手法の最適化計算に当たって、
+遺伝的アルゴリズム、粒子群最適化、差分進化及びカッコウ探索を従来の動的計画法と
+比較した。この結果、純粋な計算精度はカッコウ探索がメタヒューリスティック手法の中で
+最も良く、また世代を継続しても評価値が改善され続けるため、
+最終的には計算開始後すぐには精度の高い他ヒューリスティック手法を上回ることが確認できた。
+カッコウ探索手法は現在主流となっている動的計画法の1/11程度の時間で理論解に0.066\%まで迫り、
+メタヒューリスティック、特にカッコウ探索による統合的最適化手法が有効であることを示した。
+
+
+\section{Harmony Search(HS)}
+Harmony Search(HS)は音楽の即興過程を元にした、最適解探索アルゴリズムであり、
+ミュージシャンが作曲するとき、彼らが記憶にある様々な音階の組み合わせを考える過程を
+最適化された出力を得るために入力を適応させる最適化過程と捉えるものである。
+他のメタヒューリスティック手法が自然界の虫などの生物による群知能に基づいた手法が
+多いのに対し、HSはある美的基準に基付いて決定された、完璧に調和のとれたハーモニーを
+探索する音楽的な過程から着想を得ているという点で大きく異なっている。
+
+即興演奏は様々な音階の組み合わせを試してよりよりハーモニーを探索する過程であり、
+以下の三つの規則に従う。
+
+\begin{enumerate}
+  \item 記憶の中にある一つの音階を演奏する。
+  \item 記憶中にある一つの音階に隣接する音階を演奏する。
+  \item 演奏可能領域の中のランダムな音階を演奏する。
+\end{enumerate}
+
+Harmony Searchアルゴリズムはミュージシャンが行なっているこの過程を模倣し、
+以下の三つの規則に従って最適解を探索する。
+\begin{enumerate}
+  \item HS記憶から任意の値を選択する。
+  \item HS記憶から任意の値に隣接した値を選択する。
+  \item 選択可能範囲からランダムな値を選択する。
+\end{enumerate}
+このHarmony Searchアルゴリズムにおいて、
+harmony memory considering rate (HMCR)とpitch adjusting rate (PAR)
+という二つのパラメータを用いることにより、より効率的な探索が可能である。
+
+Harmony Searchアルゴリズムをステップごとに示すと次のようになる。
+\begin{enumerate}
+  \item HS記憶(HM)を初期する。このHMは所与の数のランダムに生成された最適化問題に対する解法であり、
+  例えば$n$次元の問題において、HMは次のように表現される。
+  \[
+  HM = \left[
+    \begin{array}{rrrr}
+      x_1^1 & x_2^1 & \dots & x_n^1 \\
+      x_1^2 & x_2^2 & \dots & x_n^1 \\
+      \vdots \\
+      x_1^{HMS} & x_2^{HMS} & \dots & x_n^{HMS}
+    \end{array}
+  \right]
+\]
+HMSのそれぞれの行ベクトルは解法の候補であり、HMSは50から100の間に設定されることが多い。
+\item HMから新たな解法$[x_1^{\prime},  x_2^{\prime},  \dots,  x_n^{\prime}]$を即興する。
+この新たな解法におけるそれぞれの構成要素はHMCRに基づいて獲得される。HMCRは
+現在のHMから構成要素を選択するときの確率として定義され、
+1-HMCRは新たな構成要素をランダムに生成することを示している。仮に$x_j'$がHMから
+選ばれるのならばランダムなHMの構成要素の$j$番目の次元から選択されることになり、
+これは後にPARに基づいて変異しうる。PARはHMから取り出された候補が変異されうるかどうかの
+確率を決定する。この手法は遺伝的アルゴリズム(GA)にも類似しているものの、
+GAが一つもしくは二つの現存する染色体の連なりのみを用いて新たな染色体の連なりを生成するのに対し、
+HSの解法はHMの全てのメンバーを用いて生成される点で異なっている。
+
+\item HMを更新する。一つ前のステップで求められた解法が評価される。
+仮に新たな解法がHMの最悪の解法より良い適合度を示した場合、この最悪の解法は
+新たな解法に置き換えられる。
+\item 終了条件を満たせば終了し、そうでなければs2に戻る。
+\end{enumerate}
+
+\subsection{Harmony Searchの特徴}
+Harmony Searchアルゴリズムは他のGAやPSOなどと比較し、進化のために単一の探索記憶のみを
+使用するため、簡潔なアルゴリズムとなっている。
+
+Yang(2013)はHSを他の最適化手法と比較する上で、diversification(多様化)と
+intensification(強化)という二つのキーワードを挙げている。diversificationは
+広大なパラメータ空間を効率的効果的により多くの
+空間を探索することする。
+一方、intensificationは探索知的や経験から
+可能であればランダムさを減らしdiversificationを制限することにより、
+収束を加速させる。このdiversificationとintensificationの最適な均衡が必要であり、
+この最適な均衡を求めること自体が最適化である。
+
+Harmony Search アルゴリズムにおいてはdiversification
+は音階の適用とランダムな生成という二つの要素により制御
+されており、このことがHS手法の高い効率性のための
+重要な要素となりうる。この二つの要素により、HSが良い局所解を
+発見することを可能にしている。
+intensificationはHSアルゴリズムのHarmony Memory Accepting Rate(HMAR)で
+調整されており、このレートが高いほどHM内の
+適合度の高い解法がより選択されやすくなる。これは
+遺伝的アルゴリズムにおけるエリート種の保存に類似する。
+このintensificationもまた音階の適用で制御が可能であるため、
+こういった構成要素間の相互作用がHSを他の手法と比較し
+いくつかの問題においてより成功している理由と考えられている。
+
+\subsection{Harmony Searchアルゴリズムの実用例}
+もともとHarmony Search アルゴリズムは
+排水管網の最適化問題を解くために開発・応用された。
+Harmony Searchアルゴリズムは産業や工学の分野でも応用が進んでおり、最近では電力システムに関連する最適化問題への応用も先行研究で多く行われている。
+Sinsuphan(2013)はHSを逐次二次計画法と組み合わせることにより、
+最適な電力供給問題に応用した。
+
+\begin{thebibliography}{9}
+\bibitem{sinsuphan} N. Sinsuphan, U. Leeton, T. Kulworawanichpong, "Optimal power flow solution using
+\bibitem{YangHuihua} Yang Huihua, Zhang Xiaofeng and Xie Pumo, "Multiprocessor Task Scheduling Method Based on Cuckoo Search Algorithm", Jisuanji Kexue, Vol. 42, No.1, 86-89(2015)
+\bibitem{Yang} XS Yang, "Harmony Search as a Metaheuristic Algorithm", Music-Inspired Harmony Search Algorithm,  Theory and Applications (Editor Z. W. Geem), Studies in Computational Intelligence, Springer Berlin, vol. 191, pp. 1-14 (2009)
+improved harmony search method.", Appl. Soft Comput. 13(5), 2364–2374 (2013)
+\bibitem{geem} Zong Woo Geem, Joong Hoon Kim and G.V. Loganathan, "A New Heuristic Optimization Algorithm: Harmony Search", Simulation 76.2, 60-68 (2001)
+\bibitem{ikeda} 池田伸太郎, 大岡龍三「メタヒューリスティックを用いた蓄電池・蓄熱槽・熱源の統合的最適運用手法の開発」, 日本犬陸学会環境系論文集, 第79巻, 第705号, 957-966 (2014)
+\end{thebibliography}
+
+
+
+
+
+
+\end{document}
